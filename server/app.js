@@ -2,9 +2,8 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const { db } = require('../database/index.js');
 const {
-  getBizInfo, getPhotoInfo, getPhotos, getDishPhotos, getUserInfo,
+  getBizInfo, bizCreate, bizUpdate, bizDelete, getDishPhotos,
 } = require('../database/seeder/helper.js');
 
 const app = express();
@@ -24,39 +23,29 @@ app.get('/biz/:bId', async (req, res) => {
     res.status(400).send(err);
   }
 });
-// Get photo detail by requesting pId
-app.get('/biz_photo/:bId/:pId', async (req, res) => {
+
+app.put('/biz/:bId', (req, res) => {
   try {
-    const result = await getPhotoInfo(JSON.parse(req.params.pId), JSON.parse(req.params.bId));
-    res.status(200).send(result);
+    bizUpdate(JSON.parse(req.params.bId), req.body.biz);
+    res.status(200);
   } catch (err) {
     res.status(400).send(err);
   }
 });
 
-// Get user info by requesting uId
-app.get('/users/:uId', async (req, res) => {
+app.post('/biz/:bId', (req, res) => {
   try {
-    const result = await getUserInfo(JSON.parse(req.params.uId));
-    res.status(200).send(result);
+    bizCreate(JSON.parse(req.body.biz));
+    res.status(200);
   } catch (err) {
     res.status(400).send(err);
   }
 });
 
-// Get 20 photos by requesting pId (Modified for user ids test)
-app.get('/biz_photos/:bId/:pId', async (req, res) => {
+app.delete('/biz/:bId', (req, res) => {
   try {
-    const result = await getPhotos(JSON.parse(req.params.pId), JSON.parse(req.params.bId));
-    // get uIds array
-    const userIds = [];
-    result.forEach((item) => {
-      userIds.push(item.uId);
-    });
-    const final = [];
-    final.push(result);
-    final.push(userIds);
-    res.status(200).send(final); // [[result], [userIds]]
+    bizDelete(JSON.parse(req.params.bId));
+    res.status(200);
   } catch (err) {
     res.status(400).send(err);
   }

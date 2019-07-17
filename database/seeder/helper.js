@@ -11,6 +11,21 @@ const asyncForEach = async (array, callback) => {
 };
 
 module.exports = {
+  bizCreate: (biz) => {
+    Biz.create(biz)
+      .then(() => db.close())
+      .catch(err => console.log(err));
+  },
+  bizUpdate: (id, biz) => {
+    Biz.updateOne({ bId: id }, biz)
+      .then(() => db.close())
+      .catch(err => console.log(err));
+  },
+  bizDelete: (id) => {
+    Biz.deleteOne({ bId: id })
+      .then(() => db.close())
+      .catch(err => console.log(err));
+  },
   insertBizData: () => {
     Biz.insertMany(generateBiz())
       .then(() => db.close())
