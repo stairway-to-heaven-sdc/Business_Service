@@ -1,50 +1,66 @@
-const mongoose = require('mongoose');
+/* eslint-disable no-console */
+const cassandra = require('cassandra-driver');
 
-const url = 'mongodb://localhost';// localhost';
-const mongoDBURI = process.env.MONGOLAB_URI || url;
-mongoose.connect(mongoDBURI,
-  {
-    dbName: 'Yelp',
-    useNewUrlParser: true,
-  }).then(() => console.log('mongoDB connected'))
-  .catch(err => console.log(err));
-
-const db = mongoose.connection;
-
-const bizSchema = mongoose.Schema({
-  bId: Number,
-  bizname: String,
-  reviewCount: Number,
-  rating: Number,
-  price: String,
-  category: [String],
-  location: Object,
-  phone: String,
-  url: String,
-  photos: [Number],
+const client = new cassandra.Client({
+  contactPoints: ['127.0.0.1'],
+  localDataCenter: 'datacenter1',
 });
 
-const Biz = mongoose.model('Biz', bizSchema);
-
-const photoSchema = mongoose.Schema({
-  pId: Number,
-  imgUrl: String,
-  uId: Number,
-  bId: Number,
-  text: String,
-  tag: String,
+client.connect((err) => {
+  if (err) {
+    console.log(err);
+  } else {
+    console.log('Success!');
+  }
 });
-const Photo = mongoose.model('Photo', photoSchema);
 
-const userSchema = mongoose.Schema({
-  uId: Number,
-  userav: String,
-  username: String,
-});
-const User = mongoose.model('User', userSchema);
-module.exports = {
-  Biz,
-  Photo,
-  User,
-  db,
-};
+const keyspace = `CREATE KEYSPACE IF NOT EXISTS bizSchema
+  WITH REPLICATION = {
+    'class' : 'SimpleStrategy',
+    'replication_factor' : 1
+  };`;
+const bizTable = `CREATE TABLE IF NOT EXISTS bizSchema.biz(
+  bId INT primary key,
+  bizname TEXT,
+  reviewCount INT,
+  rating DECIMAL,
+  price DECIMAL,
+  category list<TEXT>,
+  location map<TEXT, TEXT>,
+  phone INT,
+  url TEXT,
+  photos list<int>,
+)`;
+
+client.execute(keyspace)
+  .then(() => client.execute(bizTable, (err, result) => {
+    console.log(err, result);
+  }));
+
+// const mongoose = require('mongoose');
+
+// const url = 'mongodb://localhost';// localhost';
+// const mongoDBURI = process.env.MONGOLAB_URI || url;
+// mongoose.connect(mongoDBURI,
+//   {
+//     dbName: 'Yelp',
+//     useNewUrlParser: true,
+//   }).then(() => console.log('mongoDB connected'))
+//   .catch(err => console.log(err));
+
+// const db = mongoose.connection;
+
+// const bizSchema = mongoose.Schema({
+//   bId: Number,
+//   bizname: String,
+//   reviewCount: Number,
+//   rating: Number,
+//   price: String,
+//   category: [String],
+//   location: Object,
+//   phone: String,
+//   url: String,
+//   photos: [Number],
+// });
+
+// const Biz = mongoose.model('Biz', bizSchema);
