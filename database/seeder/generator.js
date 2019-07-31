@@ -1,16 +1,16 @@
+/* eslint-disable no-console */
 const faker = require('faker');
-const fs = require('fs');
+// const fs = require('fs');
 const _ = require('lodash');
-const sampleBiz = require('../sample/business.js');
+// const sampleBiz = require('../sample/business.js');
 const samplePhotos = require('../sample/photos');
 const sampleUsers = require('../sample/users');
-// const {
-//   db, Biz, user, photo,
-// } = require('./index');
+const {
+  client, //   db, Biz, user, photo,
+} = require('../index');
 
 
 const generateBiz = () => {
-  let BizData = [];
   const first = [
     'Anchor', 'Bon', 'Chon', 'Buffalo', 'Wild', 'Chicken', 'Salad', 'Dell', 'Rhea\'s', 'Grandy\'s', 'Gus\'s', 'World',
     'Famous', 'Fried', 'Lee\'s', 'Ma', 'Yu', 'Ching\'s', 'Bucket', 'Pollo', 'Ranch', 'Rostipollos', 'Roscoe\'s', 'House of',
@@ -42,8 +42,9 @@ const generateBiz = () => {
   const district = [
     'Montrose', 'Chinatown', 'South Main', 'Museum District', 'Downtown', 'Braeswood Place', 'Fourth Ward', 'Energy Corridor',
   ];
-  BizData = BizData.concat(sampleBiz);
-  for (let bId = 4; bId <= 400; bId += 1) {
+
+  let queries = [];
+  for (let bId = 1; bId <= 50; bId += 1) {
     let name = '';
     const length = Math.ceil(Math.random() * 2 + 1);
     for (let i = 0; i < length; i += 1) {
@@ -63,17 +64,17 @@ const generateBiz = () => {
     const rating = faker.random.arrayElement([1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5]);
     const price = faker.random.arrayElement(['$', '$$', '$$$', '$$$$', '$$$$$']);
     const category = type;
-    const phone = faker.phone.phoneNumberFormat(1);
+    const phone = (faker.phone.phoneNumberFormat(1)).toString();
     const url = faker.internet.url();
     const photos = [1, 2, 3];
     const address1 = faker.address.streetAddress();
     const address2 = faker.address.secondaryAddress();
     const city = faker.address.city(3);
     const state = faker.address.stateAbbr();
-    const zipcode = faker.address.zipCode('#####');
+    const zipcode = (faker.address.zipCode('#####')).toString();
     const neighborhood = nhood;
-    const latitude = Number(faker.address.latitude());
-    const longitude = Number(faker.address.longitude());
+    const latitude = (Number(faker.address.latitude())).toString();
+    const longitude = (Number(faker.address.longitude())).toString();
     const locObj = {
       address1,
       address2,
@@ -85,23 +86,18 @@ const generateBiz = () => {
       longitude,
     };
 
-    BizData.push({
-      bId,
-      bizname,
-      reviewCount,
-      rating,
-      price,
-      category,
-      location: locObj,
-      phone,
-      url,
-      photos,
+    queries.push({
+      query: 'INSERT INTO bizSchema.biz ( bId, bizname, reviewCount, rating, price, category, location, phone, url, photos) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      params: [bId, bizname, reviewCount, rating, price, category, locObj, phone, url, photos],
     });
   }
-
-  // return { data: BizData };
-  return BizData;
+  client.batch(queries, { prepare: true })
+    .then(result => console.log('Data updated on cluster'));
+  queries = null;
+  console.log(max);
 };
+
+generateBiz();
 
 const generatePhoto = () => {
   let photos = [];

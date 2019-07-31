@@ -27,16 +27,21 @@ const bizTable = `CREATE TABLE IF NOT EXISTS bizSchema.biz(
   price DECIMAL,
   category list<TEXT>,
   location map<TEXT, TEXT>,
-  phone INT,
+  phone TEXT,
   url TEXT,
   photos list<int>,
-)`;
+);`;
 
 client.execute(keyspace)
   .then(() => client.execute(bizTable, (err, result) => {
-    console.log(err, result);
+    if (err) {
+      console.log('Error', err);
+    } else {
+      console.log('Creating Keyspace and Biztable \n',);
+    }
   }));
 
+module.exports = { client };
 // const mongoose = require('mongoose');
 
 // const url = 'mongodb://localhost';// localhost';
