@@ -37,7 +37,7 @@ client.execute(keyspace)
     if (err) {
       console.log('Error', err);
     } else {
-      console.log('Creating Keyspace and Biztable \n',);
+      console.log('Creating Keyspace and Biztable \n');
     }
   }));
 

@@ -10,7 +10,7 @@ const {
 } = require('../index');
 
 
-const generateBiz = () => {
+const generateBiz = (start = 1) => {
   const first = [
     'Anchor', 'Bon', 'Chon', 'Buffalo', 'Wild', 'Chicken', 'Salad', 'Dell', 'Rhea\'s', 'Grandy\'s', 'Gus\'s', 'World',
     'Famous', 'Fried', 'Lee\'s', 'Ma', 'Yu', 'Ching\'s', 'Bucket', 'Pollo', 'Ranch', 'Rostipollos', 'Roscoe\'s', 'House of',
@@ -43,8 +43,9 @@ const generateBiz = () => {
     'Montrose', 'Chinatown', 'South Main', 'Museum District', 'Downtown', 'Braeswood Place', 'Fourth Ward', 'Energy Corridor',
   ];
 
-  let queries = [];
-  for (let bId = 1; bId <= 50; bId += 1) {
+  const queries = [];
+  const end = start + 25;
+  for (let bId = start; bId < end; bId += 1) {
     let name = '';
     const length = Math.ceil(Math.random() * 2 + 1);
     for (let i = 0; i < length; i += 1) {
@@ -92,9 +93,13 @@ const generateBiz = () => {
     });
   }
   client.batch(queries, { prepare: true })
-    .then(result => console.log('Data updated on cluster'));
-  queries = null;
-  console.log(max);
+    .then(() => {
+      console.log(end);
+      if (end < 10000000) {
+        generateBiz(end);
+      }
+    })
+    .catch(err => console.log(err));
 };
 
 generateBiz();
