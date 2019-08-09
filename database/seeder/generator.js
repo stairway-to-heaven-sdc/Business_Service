@@ -40,21 +40,14 @@ const generateBiz = async () => {
   ];
 
   let queries = [];
+
   const batch25 = async (queries, bId) => {
     await client.batch(queries, { prepare: true })
       .then(() => {
-        console.log(bId, "<- Success");
-        heapDump();
+        console.log(bId);
       })
       .catch(err => console.log(err));
   };
-  function heapDump() {
-    const memMB = process.memoryUsage().rss / 1048576;
-    console.log(memMB);
-    // if (memMB > 60) {
-    // global.gc();
-    // }
-  }
   for (let bId = 1; bId <= 10000000; bId += 1) {
     let name = '';
     const length = Math.ceil(Math.random() * 2 + 1);
@@ -102,7 +95,7 @@ const generateBiz = async () => {
       params: [bId, bizname, reviewCount, rating, price, category, locObj, phone, url, photos],
     });
     if (queries.length === 25) {
-      // console.log(bId);
+      console.log(bId);
       await batch25(queries, bId);
       queries = null;
       queries = [];
@@ -112,15 +105,4 @@ const generateBiz = async () => {
 
 generateBiz();
 
-// const dataArr = generateBiz();
-// const dataObj = generateBiz();
-// const photoArr = generatePhoto();
-// const photoObj = generatePhoto();
-// const userObj = generateUser();
-// fs.writeFileSync('bizData.json', JSON.stringify(dataArr, null, '\t'));
-// fs.writeFileSync('bizData.json', JSON.stringify(dataObj, null, '\t'));
-// fs.writeFileSync('photoData.json', JSON.stringify(photoObj, null, '\t'));
-// fs.writeFileSync('userData.json', JSON.stringify(userObj, null, '\t'));
-module.exports = {
-  generateBiz,
-};
+module.exports = { generateBiz };
