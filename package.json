@@ -13,6 +13,7 @@
     "server": "nodemon server/index.js",
     "seed": "node database/seeder/seed.js",
     "unseed": "node database/seeder/unseed.js",
+    "seedCassandra": "node --expose-gc database/seeder/generator.js",
     "compile-sass": "node-sass client/src/stylesheets/main.scss client/dist/style.css",
     "test": "jest --verbose",
     "test:watch": "npm test -- --watch",

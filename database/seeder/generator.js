@@ -3,6 +3,7 @@ const faker = require('faker');
 // const fs = require('fs');
 const _ = require('lodash');
 // const sampleBiz = require('../sample/business.js');
+// const profiler = require('v8-profiler');
 const samplePhotos = require('../sample/photos');
 const sampleUsers = require('../sample/users');
 const {
@@ -43,8 +44,15 @@ const generateBiz = (start = 1) => {
     'Montrose', 'Chinatown', 'South Main', 'Museum District', 'Downtown', 'Braeswood Place', 'Fourth Ward', 'Energy Corridor',
   ];
 
-  const queries = [];
+  let queries = [];
   const end = start + 25;
+  function heapDump() {
+    const memMB = process.memoryUsage().rss / 1048576;
+    console.log(memMB);
+    // if (memMB > 60) {
+    //   global.gc();
+    // }
+  }
   for (let bId = start; bId < end; bId += 1) {
     let name = '';
     const length = Math.ceil(Math.random() * 2 + 1);
@@ -96,6 +104,8 @@ const generateBiz = (start = 1) => {
     .then(() => {
       console.log(end);
       if (end < 10000000) {
+        heapDump();
+        queries = null;
         generateBiz(end);
       }
     })
@@ -103,47 +113,6 @@ const generateBiz = (start = 1) => {
 };
 
 generateBiz();
-
-const generatePhoto = () => {
-  let photos = [];
-  photos = photos.concat(samplePhotos);
-  for (let pId = 11; pId <= 400; pId += 1) {
-    const imgUrl = faker.image.food();
-    const uId = faker.random.number({ min: 1, max: 100 });
-    // const userName = faker.internet.userName();
-    // const userAv = faker.image.avatar();
-    const text = faker.lorem.sentence();
-    const tag = faker.commerce.productName();
-    const bId = faker.random.number({ min: 1, max: 100 });
-
-    photos.push({
-      pId,
-      imgUrl,
-      uId,
-      bId,
-      text,
-      tag,
-    });
-  }
-  // return { photos };
-  return photos;
-};
-
-const generateUser = () => {
-  let users = [];
-  users = users.concat(sampleUsers);
-  for (let uId = 11; uId <= 400; uId += 1) {
-    const username = faker.internet.userName();
-    const userav = faker.image.avatar();
-
-    users.push({
-      uId,
-      username,
-      userav,
-    });
-  }
-  return users;
-};
 
 // const dataArr = generateBiz();
 // const dataObj = generateBiz();
@@ -156,6 +125,4 @@ const generateUser = () => {
 // fs.writeFileSync('userData.json', JSON.stringify(userObj, null, '\t'));
 module.exports = {
   generateBiz,
-  generatePhoto,
-  generateUser,
 };
