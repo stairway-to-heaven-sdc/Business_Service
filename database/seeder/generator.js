@@ -1,17 +1,12 @@
 /* eslint-disable no-console */
 const faker = require('faker');
-// const fs = require('fs');
 const _ = require('lodash');
-// const sampleBiz = require('../sample/business.js');
 // const profiler = require('v8-profiler');
-const samplePhotos = require('../sample/photos');
-const sampleUsers = require('../sample/users');
-const {
-  client, //   db, Biz, user, photo,
-} = require('../index');
+const { client } = require('../index');
 
 
-const generateBiz = (start = 1) => {
+const generateBiz = async () => {
+
   const first = [
     'Anchor', 'Bon', 'Chon', 'Buffalo', 'Wild', 'Chicken', 'Salad', 'Dell', 'Rhea\'s', 'Grandy\'s', 'Gus\'s', 'World',
     'Famous', 'Fried', 'Lee\'s', 'Ma', 'Yu', 'Ching\'s', 'Bucket', 'Pollo', 'Ranch', 'Rostipollos', 'Roscoe\'s', 'House of',
@@ -45,15 +40,22 @@ const generateBiz = (start = 1) => {
   ];
 
   let queries = [];
-  const end = start + 25;
+  const batch25 = async (queries, bId) => {
+    await client.batch(queries, { prepare: true })
+      .then(() => {
+        console.log(bId, "<- Success");
+        heapDump();
+      })
+      .catch(err => console.log(err));
+  };
   function heapDump() {
     const memMB = process.memoryUsage().rss / 1048576;
     console.log(memMB);
     // if (memMB > 60) {
-    //   global.gc();
+    // global.gc();
     // }
   }
-  for (let bId = start; bId < end; bId += 1) {
+  for (let bId = 1; bId <= 10000000; bId += 1) {
     let name = '';
     const length = Math.ceil(Math.random() * 2 + 1);
     for (let i = 0; i < length; i += 1) {
@@ -99,17 +101,13 @@ const generateBiz = (start = 1) => {
       query: 'INSERT INTO bizSchema.biz ( bId, bizname, reviewCount, rating, price, category, location, phone, url, photos) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
       params: [bId, bizname, reviewCount, rating, price, category, locObj, phone, url, photos],
     });
+    if (queries.length === 25) {
+      // console.log(bId);
+      await batch25(queries, bId);
+      queries = null;
+      queries = [];
+    }
   }
-  client.batch(queries, { prepare: true })
-    .then(() => {
-      console.log(end);
-      if (end < 10000000) {
-        heapDump();
-        queries = null;
-        generateBiz(end);
-      }
-    })
-    .catch(err => console.log(err));
 };
 
 generateBiz();
