@@ -24,12 +24,12 @@ const bizTable = `CREATE TABLE IF NOT EXISTS bizSchema.biz(
   bizname TEXT,
   reviewCount INT,
   rating DECIMAL,
-  price DECIMAL,
-  category list<TEXT>,
-  location map<TEXT, TEXT>,
+  price TEXT,
+  category TEXT,
+  location TEXT,
   phone TEXT,
   url TEXT,
-  photos list<int>,
+  photos TEXT,
 );`;
 
 client.execute(keyspace)

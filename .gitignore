@@ -25,3 +25,4 @@ build/
 /client/dist/*bundle.js
 /client/dist/*main.css
 
+csv50000.csv

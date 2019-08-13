@@ -1,12 +1,12 @@
 /* eslint-disable no-console */
 const faker = require('faker');
 const _ = require('lodash');
-// const profiler = require('v8-profiler');
+const createCsvWriter = require('csv-writer').createObjectCsvWriter;
+const { exec } = require('child_process');
 const { client } = require('../index');
 
 
 const generateBiz = async () => {
-
   const first = [
     'Anchor', 'Bon', 'Chon', 'Buffalo', 'Wild', 'Chicken', 'Salad', 'Dell', 'Rhea\'s', 'Grandy\'s', 'Gus\'s', 'World',
     'Famous', 'Fried', 'Lee\'s', 'Ma', 'Yu', 'Ching\'s', 'Bucket', 'Pollo', 'Ranch', 'Rostipollos', 'Roscoe\'s', 'House of',
@@ -39,12 +39,34 @@ const generateBiz = async () => {
     'Montrose', 'Chinatown', 'South Main', 'Museum District', 'Downtown', 'Braeswood Place', 'Fourth Ward', 'Energy Corridor',
   ];
 
-  let queries = [];
+  const csvWriter = createCsvWriter({
+    path: './database/csvFiles/csv50000.csv',
+    header: [
+      { id: 'bId', title: 'bId' },
+      { id: 'bizname', title: 'bizname' },
+      { id: 'reviewCount', title: 'reviewCount' },
+      { id: 'rating', title: 'rating' },
+      { id: 'price', title: 'price' },
+      { id: 'category', title: 'category' },
+      { id: 'location', title: 'location' },
+      { id: 'phone', title: 'phone' },
+      { id: 'url', title: 'url' },
+      { id: 'photos', title: 'photos' },
+    ],
+    fieldDelimiter: ';',
+  });
 
-  const batch25 = async (queries, bId) => {
-    await client.batch(queries, { prepare: true })
-      .then(() => {
-        console.log(bId);
+  let queries = [];
+  // eslint-disable-next-line no-shadow
+  const batch50000 = async () => {
+    await csvWriter.writeRecords(queries)
+      .then(async () => {
+        console.log('Start');
+        // await exec("cqlsh -e COPY bizSchema.biz (bId,bizname,reviewCount,rating,price,category,location,phone,url,photos) FROM '/database/csvFiles/csv50000.csv' WITH HEADER = TRUE AND DELIMITER =';';");
+        await exec("cqlsh -e COPY bizSchema.biz (bId,bizname,reviewCount,rating,price,category,location,phone,url,photos) FROM '/Users/Nick/Documents/JS Projs/Hack Reactor/Business_Service/database/csvFiles/csv50000.csv' WITH HEADER = TRUE AND DELIMITER =';';");
+        // exec("cqlsh 127.0.0.1 -e COPY bizSchema.biz (bId,bizname,reviewCount,rating,price,category,location,phone,url,photos) FROM './database/csvFiles/csv50000.csv' WITH HEADER = TRUE;");
+
+        console.log('Seeded 50000');
       })
       .catch(err => console.log(err));
   };
@@ -67,10 +89,10 @@ const generateBiz = async () => {
     const reviewCount = faker.random.number(8000);
     const rating = faker.random.arrayElement([1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5]);
     const price = faker.random.arrayElement(['$', '$$', '$$$', '$$$$', '$$$$$']);
-    const category = type;
+    const category = JSON.stringify(type);
     const phone = (faker.phone.phoneNumberFormat(1)).toString();
     const url = faker.internet.url();
-    const photos = [1, 2, 3];
+    const photos = [];
     const address1 = faker.address.streetAddress();
     const address2 = faker.address.secondaryAddress();
     const city = faker.address.city(3);
@@ -79,7 +101,7 @@ const generateBiz = async () => {
     const neighborhood = nhood;
     const latitude = (Number(faker.address.latitude())).toString();
     const longitude = (Number(faker.address.longitude())).toString();
-    const locObj = {
+    const location = JSON.stringify({
       address1,
       address2,
       city,
@@ -88,15 +110,17 @@ const generateBiz = async () => {
       neighborhood,
       latitude,
       longitude,
-    };
-
-    queries.push({
-      query: 'INSERT INTO bizSchema.biz ( bId, bizname, reviewCount, rating, price, category, location, phone, url, photos) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-      params: [bId, bizname, reviewCount, rating, price, category, locObj, phone, url, photos],
     });
-    if (queries.length === 25) {
+    // eslint-disable-next-line max-len
+    queries.push({
+      bId, bizname, reviewCount, rating, price, category, location, phone, url, photos,
+    });
+    if (queries.length % 1000 === 0) {
       console.log(bId);
-      await batch25(queries, bId);
+    }
+    if (queries.length === 50000) {
+      // eslint-disable-next-line no-await-in-loop
+      await batch50000();
       queries = null;
       queries = [];
     }
