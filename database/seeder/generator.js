@@ -40,7 +40,7 @@ const generateBiz = async () => {
   ];
 
   const csvWriter = createCsvWriter({
-    path: './database/csvFiles/csv50000.csv',
+    path: './database/csvFiles/10Million.csv',
     header: [
       { id: 'bId', title: 'bId' },
       { id: 'bizname', title: 'bizname' },
@@ -58,18 +58,25 @@ const generateBiz = async () => {
 
   let queries = [];
   // eslint-disable-next-line no-shadow
-  const batch50000 = async () => {
+  const createBatch = async () => {
     await csvWriter.writeRecords(queries)
       .then(async () => {
-        console.log('Start');
+        console.log('Inital 50000');
         // await exec("cqlsh -e COPY bizSchema.biz (bId,bizname,reviewCount,rating,price,category,location,phone,url,photos) FROM '/database/csvFiles/csv50000.csv' WITH HEADER = TRUE AND DELIMITER =';';");
-        await exec("cqlsh -e COPY bizSchema.biz (bId,bizname,reviewCount,rating,price,category,location,phone,url,photos) FROM '/Users/Nick/Documents/JS Projs/Hack Reactor/Business_Service/database/csvFiles/csv50000.csv' WITH HEADER = TRUE AND DELIMITER =';';");
         // exec("cqlsh 127.0.0.1 -e COPY bizSchema.biz (bId,bizname,reviewCount,rating,price,category,location,phone,url,photos) FROM './database/csvFiles/csv50000.csv' WITH HEADER = TRUE;");
-
-        console.log('Seeded 50000');
+        // await exec("cqlsh -e COPY bizSchema.biz (bId,bizname,reviewCount,rating,price,category,location,phone,url,photos) FROM '/Users/Nick/Documents/JS Projs/Hack Reactor/Business_Service/database/csvFiles/csv50000.csv' WITH HEADER = TRUE AND DELIMITER =';';", (error, stdout, stderr) => {
+        //   if (error) {
+        //     console.error(`exec error: ${error}`);
+        //     return;
+        //   }
+        //   console.log('Seeded 50000');
+        //   console.log(`stdout: ${stdout}`);
+        //   console.log(`stderr: ${stderr}`);
+        // });
       })
       .catch(err => console.log(err));
   };
+
   for (let bId = 1; bId <= 10000000; bId += 1) {
     let name = '';
     const length = Math.ceil(Math.random() * 2 + 1);
@@ -115,12 +122,14 @@ const generateBiz = async () => {
     queries.push({
       bId, bizname, reviewCount, rating, price, category, location, phone, url, photos,
     });
-    if (queries.length % 1000 === 0) {
-      console.log(bId);
+    if (queries.length % 100000 === 0) {
+      console.log((bId / 10000000) * 100);
     }
+
+
     if (queries.length === 50000) {
       // eslint-disable-next-line no-await-in-loop
-      await batch50000();
+      await createBatch();
       queries = null;
       queries = [];
     }
