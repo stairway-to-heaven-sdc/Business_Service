@@ -25,3 +25,5 @@ build/
 /client/dist/*bundle.js
 /client/dist/*main.css
 
+10Million.csv
+csv50000.csv
