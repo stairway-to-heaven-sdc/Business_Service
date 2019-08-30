@@ -1,10 +1,10 @@
-
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const {
-  getBizInfo, bizCreate, bizUpdate, bizDelete, insertBizData, removeBizData,
+  getBizInfo, bizCreate, bizUpdate, bizDelete,
 } = require('../database/seeder/helper.js');
+
 const app = express();
 
 app.use(cors());

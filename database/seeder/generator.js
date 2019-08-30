@@ -104,8 +104,6 @@ const generateBiz = async () => {
     }
   }
 };
-// createTable();
-// generateBiz();
 
 module.exports = {
   generateBiz,
