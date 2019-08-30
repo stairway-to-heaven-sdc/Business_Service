@@ -2,7 +2,7 @@
 const faker = require('faker');
 const _ = require('lodash');
 const pgp = require('pg-promise')({ capSQL: true });
-const { db, cs, createTable } = require('../index');
+const { db, cs } = require('../index');
 
 const generateBiz = async () => {
   const first = [

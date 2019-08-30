@@ -1,5 +1,8 @@
-const { insertBizData } = require('./helper');
+const { generateBiz } = require('./generator');
 const { createTable } = require('../index');
 
-createTable();
-insertBizData();
+const seed = async () => {
+  await createTable();
+  await generateBiz();
+};
+seed();

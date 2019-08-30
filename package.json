@@ -11,7 +11,7 @@
     "build": "webpack --config webpack.prod.js --watch",
     "react": "webpack --config webpack.dev.js --watch",
     "server": "nodemon server/index.js",
-    "seed": "node database/seeder/generator.js",
+    "seed": "node database/seeder/seed.js",
     "unseed": "node database/seeder/unseed.js",
     "compile-sass": "node-sass client/src/stylesheets/main.scss client/dist/style.css",
     "test": "jest --verbose",
