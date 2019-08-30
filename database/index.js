@@ -1,23 +1,30 @@
 /* eslint-disable no-console */
-// const mongoose = require('mongoose');
-const { Client } = require('pg');
-
-const client = new Client({
-  database: 'bizschema',
+const pgp = require('pg-promise')({
+  capSQL: true, // generate capitalized SQL
 });
 
-// const connect = async () => {
-//   await client.connect();
-//   // const res = await client.query('CREATE DATABASE bizSchema');
-//   // console.log(res);
-//   const res = await client.query('SELECT $1::text as stat', ['Database successfully connected']);
-//   console.log(res.rows[0].stat);
-//   await client.end();
-// };
+const db = pgp({ database: 'bizschema' });
+
+const cs = new pgp.helpers.ColumnSet(
+  [
+    'bid',
+    'bizname',
+    'reviewcount',
+    'rating',
+    'price',
+    'category',
+    'location',
+    'phone',
+    'url',
+    'photos',
+  ], {
+    table: 'biz',
+  },
+);
 
 const createTable = async () => {
-  await client.connect();
-  const res = await client.query(`CREATE TABLE IF NOT EXISTS biz(
+  await db.connect();
+  const res = await db.any(`CREATE TABLE IF NOT EXISTS biz(
     bid       integer primary key,
     bizname   text,
     reviewCount integer,
@@ -28,12 +35,10 @@ const createTable = async () => {
     phone     char(14),
     url       text,
     photos    integer[]
-  );`);
+  )`)
+    .then(data => data)
+    .catch(err => console.log(err));
   console.log(res);
-  await client.end();
 };
 
-// connect();
-// createTable();
-
-module.exports = { client, createTable };
+module.exports = { db, cs, createTable };

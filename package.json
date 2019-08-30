@@ -1,6 +1,6 @@
 {
-  "name": "biz_photo",
-  "description": "show business detail and photo",
+  "name": "BusinessService",
+  "description": "show business details",
   "author": "hibow",
   "license": "MIT",
   "engines": {

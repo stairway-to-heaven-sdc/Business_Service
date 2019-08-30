@@ -1,4 +1,5 @@
-const { insertBizData, insertPhoto } = require('./helper');
+const { insertBizData } = require('./helper');
+const { createTable } = require('../index');
 
+createTable();
 insertBizData();
-insertPhoto();

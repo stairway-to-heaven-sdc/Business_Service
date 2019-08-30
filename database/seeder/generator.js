@@ -1,11 +1,8 @@
 /* eslint-disable no-console */
 const faker = require('faker');
 const _ = require('lodash');
-const pgp = require('pg-promise')({
-  capSQL: true, // generate capitalized SQL
-});
-const { createTable } = require('../index');
-const { db, cs } = require('./index2');
+const pgp = require('pg-promise')({ capSQL: true });
+const { db, cs, createTable } = require('../index');
 
 const generateBiz = async () => {
   const first = [
@@ -16,7 +13,6 @@ const generateBiz = async () => {
     'Louisiana', 'Los Pollos', 'Nando\'s', 'Mrs.', 'Winner\'s', 'Pioneer', 'Raising', 'Red', 'Roy', 'Royal', 'Southern',
     'Tastee', 'Wild', 'Wing',
   ];
-
   const second = [
     'Recipe', 'Street', 'Zone', 'Castle', 'Loco', 'Hermanos', 'Skillet', 'International', 'Blast', 'Cottage',
     'Delight', 'Express', 'Hut', 'Licken', 'Rotisserie', 'Shop', '& Pasta', 'Market', '\'n Biscuits', 'Bar',
@@ -89,9 +85,6 @@ const generateBiz = async () => {
     queries.push({
       bid, bizname, reviewcount, rating, price, category, location, phone, url, photos,
     });
-    // if (queries.length % 100000 === 0) {
-    //   console.log((bid / 10000000) * 100);
-    // }
 
     if (queries.length === 10000) {
       // eslint-disable-next-line no-await-in-loop
@@ -111,8 +104,8 @@ const generateBiz = async () => {
     }
   }
 };
-createTable();
-generateBiz();
+// createTable();
+// generateBiz();
 
 module.exports = {
   generateBiz,
