@@ -18,12 +18,12 @@ const client = new Client({
 const createTable = async () => {
   await client.connect();
   const res = await client.query(`CREATE TABLE IF NOT EXISTS biz(
-    bId       integer primary key,
+    bid       integer primary key,
     bizname   text,
     reviewCount integer,
     rating    decimal,
-    price     decimal,
-    category  text[],
+    price     text,
+    category  text,
     location  text,
     phone     char(14),
     url       text,
@@ -34,6 +34,6 @@ const createTable = async () => {
 };
 
 // connect();
-createTable();
+// createTable();
 
-module.exports = { client };
+module.exports = { client, createTable };

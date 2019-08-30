@@ -1,16 +1,13 @@
+/* eslint-disable no-console */
 const faker = require('faker');
-const fs = require('fs');
 const _ = require('lodash');
-const sampleBiz = require('../sample/business.js');
-const samplePhotos = require('../sample/photos');
-const sampleUsers = require('../sample/users');
-// const {
-//   db, Biz, user, photo,
-// } = require('./index');
+const pgp = require('pg-promise')({
+  capSQL: true, // generate capitalized SQL
+});
+const { createTable } = require('../index');
+const { db, cs } = require('./index2');
 
-
-const generateBiz = () => {
-  let BizData = [];
+const generateBiz = async () => {
   const first = [
     'Anchor', 'Bon', 'Chon', 'Buffalo', 'Wild', 'Chicken', 'Salad', 'Dell', 'Rhea\'s', 'Grandy\'s', 'Gus\'s', 'World',
     'Famous', 'Fried', 'Lee\'s', 'Ma', 'Yu', 'Ching\'s', 'Bucket', 'Pollo', 'Ranch', 'Rostipollos', 'Roscoe\'s', 'House of',
@@ -42,8 +39,12 @@ const generateBiz = () => {
   const district = [
     'Montrose', 'Chinatown', 'South Main', 'Museum District', 'Downtown', 'Braeswood Place', 'Fourth Ward', 'Energy Corridor',
   ];
-  BizData = BizData.concat(sampleBiz);
-  for (let bId = 4; bId <= 400; bId += 1) {
+
+  let queries = [];
+  const start = new Date();
+  console.log('Script started at', start);
+
+  for (let bid = 1; bid <= 10000000; bid += 1) {
     let name = '';
     const length = Math.ceil(Math.random() * 2 + 1);
     for (let i = 0; i < length; i += 1) {
@@ -59,10 +60,10 @@ const generateBiz = () => {
     let nhood = '';
     nhood += _.sample(district);
     const bizname = name;
-    const reviewCount = faker.random.number(8000);
+    const reviewcount = faker.random.number(8000);
     const rating = faker.random.arrayElement([1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5]);
     const price = faker.random.arrayElement(['$', '$$', '$$$', '$$$$', '$$$$$']);
-    const category = type;
+    const category = JSON.stringify(type);
     const phone = faker.phone.phoneNumberFormat(1);
     const url = faker.internet.url();
     const photos = [1, 2, 3];
@@ -74,7 +75,7 @@ const generateBiz = () => {
     const neighborhood = nhood;
     const latitude = Number(faker.address.latitude());
     const longitude = Number(faker.address.longitude());
-    const locObj = {
+    const location = JSON.stringify({
       address1,
       address2,
       city,
@@ -83,78 +84,36 @@ const generateBiz = () => {
       neighborhood,
       latitude,
       longitude,
-    };
-
-    BizData.push({
-      bId,
-      bizname,
-      reviewCount,
-      rating,
-      price,
-      category,
-      location: locObj,
-      phone,
-      url,
-      photos,
     });
-  }
 
-  // return { data: BizData };
-  return BizData;
-};
-
-const generatePhoto = () => {
-  let photos = [];
-  photos = photos.concat(samplePhotos);
-  for (let pId = 11; pId <= 400; pId += 1) {
-    const imgUrl = faker.image.food();
-    const uId = faker.random.number({ min: 1, max: 100 });
-    // const userName = faker.internet.userName();
-    // const userAv = faker.image.avatar();
-    const text = faker.lorem.sentence();
-    const tag = faker.commerce.productName();
-    const bId = faker.random.number({ min: 1, max: 100 });
-
-    photos.push({
-      pId,
-      imgUrl,
-      uId,
-      bId,
-      text,
-      tag,
+    queries.push({
+      bid, bizname, reviewcount, rating, price, category, location, phone, url, photos,
     });
+    // if (queries.length % 100000 === 0) {
+    //   console.log((bid / 10000000) * 100);
+    // }
+
+    if (queries.length === 10000) {
+      // eslint-disable-next-line no-await-in-loop
+      await db.none(pgp.helpers.insert(queries, cs))
+        .then()
+        .catch((error) => {
+          console.log(error);
+        });
+      queries = null;
+      queries = [];
+      if (bid === 10000000) {
+        const end = new Date();
+        console.log(`Script ended at ${end}`);
+        const minutes = ((end - start) / 1000) / 60;
+        console.log(`Total time elapsed ${minutes}`);
+      }
+    }
   }
-  // return { photos };
-  return photos;
 };
+createTable();
+generateBiz();
 
-const generateUser = () => {
-  let users = [];
-  users = users.concat(sampleUsers);
-  for (let uId = 11; uId <= 400; uId += 1) {
-    const username = faker.internet.userName();
-    const userav = faker.image.avatar();
-
-    users.push({
-      uId,
-      username,
-      userav,
-    });
-  }
-  return users;
-};
-
-// const dataArr = generateBiz();
-// const dataObj = generateBiz();
-// const photoArr = generatePhoto();
-// const photoObj = generatePhoto();
-// const userObj = generateUser();
-// fs.writeFileSync('bizData.json', JSON.stringify(dataArr, null, '\t'));
-// fs.writeFileSync('bizData.json', JSON.stringify(dataObj, null, '\t'));
-// fs.writeFileSync('photoData.json', JSON.stringify(photoObj, null, '\t'));
-// fs.writeFileSync('userData.json', JSON.stringify(userObj, null, '\t'));
 module.exports = {
   generateBiz,
-  generatePhoto,
-  generateUser,
 };
