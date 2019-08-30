@@ -1,4 +1,3 @@
-const { removeBizData, removePhoto } = require('./helper');
+const { removeBizData } = require('./helper');
 
 removeBizData();
-removePhoto();

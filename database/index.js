@@ -1,50 +1,44 @@
-const mongoose = require('mongoose');
-
-const url = 'mongodb://localhost';// localhost';
-const mongoDBURI = process.env.MONGOLAB_URI || url;
-mongoose.connect(mongoDBURI,
-  {
-    dbName: 'Yelp',
-    useNewUrlParser: true,
-  }).then(() => console.log('mongoDB connected'))
-  .catch(err => console.log(err));
-
-const db = mongoose.connection;
-
-const bizSchema = mongoose.Schema({
-  bId: Number,
-  bizname: String,
-  reviewCount: Number,
-  rating: Number,
-  price: String,
-  category: [String],
-  location: Object,
-  phone: String,
-  url: String,
-  photos: [Number],
+/* eslint-disable no-console */
+const pgp = require('pg-promise')({
+  capSQL: true, // generate capitalized SQL
 });
 
-const Biz = mongoose.model('Biz', bizSchema);
+const db = pgp({ database: 'bizschema' });
 
-const photoSchema = mongoose.Schema({
-  pId: Number,
-  imgUrl: String,
-  uId: Number,
-  bId: Number,
-  text: String,
-  tag: String,
-});
-const Photo = mongoose.model('Photo', photoSchema);
+const cs = new pgp.helpers.ColumnSet(
+  [
+    'bid',
+    'bizname',
+    'reviewcount',
+    'rating',
+    'price',
+    'category',
+    'location',
+    'phone',
+    'url',
+    'photos',
+  ], {
+    table: 'biz',
+  },
+);
 
-const userSchema = mongoose.Schema({
-  uId: Number,
-  userav: String,
-  username: String,
-});
-const User = mongoose.model('User', userSchema);
-module.exports = {
-  Biz,
-  Photo,
-  User,
-  db,
+const createTable = async () => {
+  await db.connect();
+  const res = await db.any(`CREATE TABLE IF NOT EXISTS biz(
+    bid       integer primary key,
+    bizname   text,
+    reviewCount integer,
+    rating    decimal,
+    price     text,
+    category  text,
+    location  text,
+    phone     char(14),
+    url       text,
+    photos    integer[]
+  )`)
+    .then(data => data)
+    .catch(err => console.log(err));
+  console.log(res);
 };
+
+module.exports = { db, cs, createTable };

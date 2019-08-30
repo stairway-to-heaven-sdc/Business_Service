@@ -1,114 +1,49 @@
-const {
-  db, Biz, User, Photo,
-} = require('../index');
-const { generateBiz, generatePhoto, generateUser } = require('./generator');
-
-const asyncForEach = async (array, callback) => {
-  for (let index = 0; index < array.length; index += 1) {
-    // eslint-disable-next-line no-await-in-loop
-    await callback(array[index], index, array);
-  }
-};
+/* eslint-disable no-console */
+const { db, cs } = require('../index');
+const pgp = require('pg-promise')({
+  capSQL: true, // generate capitalized SQL
+});
+const { generateBiz } = require('./generator');
 
 module.exports = {
   bizCreate: (biz) => {
-    Biz.create(biz)
-      .then(() => db.close())
+    const bizArr = [biz.bid, biz.bizname, biz.reviewcount, biz.rating, biz.price, biz.category, JSON.stringify(biz.location), biz.phone, biz.url, biz.photos];
+    db.none('INSERT INTO biz(bid, bizname, reviewcount, rating, price, category, location, phone, url, photos) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)', bizArr)
+      .then(data => data)
       .catch(err => console.log(err));
   },
-  bizUpdate: (id, biz) => {
-    Biz.updateOne({ bId: id }, biz)
-      .then(() => db.close())
+  bizUpdate: async (id, biz) => {
+    const bizArr = [id, biz.bizname, biz.reviewcount, biz.rating, biz.price, biz.category, JSON.stringify(biz.location), biz.phone, biz.url, biz.photos];
+    const string = `UPDATE biz SET bizname = $2, reviewcount = $3, rating = $4, price = $5, category = $6, location = $7, phone = $8, url = $9, photos = $10
+    WHERE bid = $1`;
+    const result = await db.none(string, bizArr)
+      .then(data => data)
       .catch(err => console.log(err));
+    return result;
   },
   bizDelete: (id) => {
-    Biz.deleteOne({ bId: id })
-      .then(() => db.close())
+    db.any('DELETE FROM biz WHERE bid = $1', [id])
+      .then(data => data)
       .catch(err => console.log(err));
   },
-  insertBizData: () => {
-    Biz.insertMany(generateBiz())
-      .then(() => db.close())
-      .catch(err => console.log(err));
+  insertBizData: async (queries) => {
+    await db.none(pgp.helpers.insert(queries, cs))
+      .then()
+      .catch((error) => {
+        console.log(error);
+      });
   },
-  removeBizData: () => {
-    Biz.deleteMany()
-      .then((res) => {
-        console.log(res);
-        db.close();
-      })
+  removeBizData: async () => {
+    await db.any('DELETE FROM biz')
+      .then(res => console.log(res))
       .catch(err => console.log(err));
   },
   getBizInfo: async (id) => {
-    const result = await Biz.findOne({ bId: id });
-    // eslint-disable-next-line no-underscore-dangle
-    return result._doc;
-  },
-  insertPhoto: () => {
-    Photo.insertMany(generatePhoto())
-      .then(() => db.close())
-      .catch(err => console.log(err));
-  },
-  getPhotoInfo: async (pid) => {
-    const result = await Photo.findOne({ pId: pid });
-    // eslint-disable-next-line no-underscore-dangle
-    return result._doc;
-  },
-  getPhotos: async (pid) => {
-    const length = pid + 19;
-    let id = pid;
-    const result = [];
-    while (id <= length) {
-      // eslint-disable-next-line no-await-in-loop
-      const photo = await Photo.findOne({ pId: id });
-      const photoObj = {
-        pId: photo.pId,
-        imgUrl: photo.imgUrl,
-        uId: photo.uId,
-        bId: photo.bId,
-        text: photo.text,
-        tag: photo.tag,
-      };
-      result.push(photoObj);
-      id += 1;
-    }
+    const result = await db.any('SELECT * FROM biz WHERE bid = $1', [id])
+      .then((data) => {
+        data[0].location = JSON.parse(data[0].location);
+        return data[0];
+      });
     return result;
-  },
-  removePhoto: () => {
-    Photo.deleteMany()
-      .then((res) => {
-        console.log(res);
-        db.close();
-      })
-      .catch(err => console.log(err));
-  },
-  insertUser: () => {
-    User.insertMany(generateUser())
-      .then(() => db.close())
-      .catch(err => console.log(err));
-  },
-  removeUser: () => {
-    User.deleteMany()
-      .then((res) => {
-        console.log(res);
-        db.close();
-      })
-      .catch(err => console.log(err));
-  },
-  getDishPhotos: async (dishes) => {
-    const result = [];
-    await asyncForEach(dishes, async (item) => {
-      const allPhotos = await Photo.find({ tag: item });
-      const firstPhoto = allPhotos[0].imgUrl;
-      const photoCount = allPhotos.length;
-      result.push({ imgUrl: firstPhoto, photoCount, dish: item });
-    });
-
-    return result;
-  },
-  getUserInfo: async (uid) => {
-    const result = await User.findOne({ uId: uid });
-    // eslint-disable-next-line no-underscore-dangle
-    return result._doc;
   },
 };

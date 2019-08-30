@@ -1,6 +1,6 @@
 {
-  "name": "biz_photo",
-  "description": "show business detail and photo",
+  "name": "BusinessService",
+  "description": "show business details",
   "author": "hibow",
   "license": "MIT",
   "engines": {
@@ -23,10 +23,13 @@
     "axios": "^0.19.0",
     "body-parser": "^1.19.0",
     "cors": "^2.8.5",
+    "csv-writer": "^1.5.0",
     "express": "^4.16.4",
     "faker": "^4.1.0",
     "lodash": "^4.17.13",
     "mongoose": "^5.5.7",
+    "pg": "^7.12.1",
+    "pg-promise": "^9.1.1",
     "prop-types": "^15.7.2",
     "react": "^16.8.6",
     "react-dom": "^16.8.6"
