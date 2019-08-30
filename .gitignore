@@ -25,5 +25,9 @@ build/
 /client/dist/*bundle.js
 /client/dist/*main.css
 
+# CSV Files
 10Million.csv
 csv50000.csv
+
+# PEM File
+SDC_Biz.pem
